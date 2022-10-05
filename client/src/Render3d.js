@@ -9,7 +9,7 @@ const Render3D = () => {
 
     const mountRef = useRef(null)
     const controls = useRef(null)
-    const path = `./../../../uploads/door3Draco.gltf`
+    const path = `./../../../uploads/profileDraco.gltf`
 
     useEffect(() => {
         const currentRef = mountRef.current;
