@@ -9,7 +9,7 @@ const Render3D = () => {
 
     const mountRef = useRef(null)
     const controls = useRef(null)
-    const path = `./../../../uploads/profile5Draco.gltf`
+    const path = `./../../../uploads/profile3Draco.gltf`
 
     useEffect(() => {
         const currentRef = mountRef.current;
@@ -17,9 +17,9 @@ const Render3D = () => {
 
         //Scene, camera, renderer
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(25, width / height, 0.1, 100);
+        const camera = new THREE.PerspectiveCamera(9, width / height, 0.1, 100);
         scene.add(camera);
-        camera.position.set(5, 1, 5);
+        camera.position.set(11, 3, 35);
         camera.lookAt(new THREE.Vector3());
 
         const renderer = new THREE.WebGLRenderer({alpha: true});
@@ -46,7 +46,7 @@ const Render3D = () => {
         new RGBELoader()
             .load("./../../../uploads/HDR1.hdr", function (texture){
                 texture.mapping = THREE.EquirectangularReflectionMapping;
-                // scene.background = texture;
+                scene.background = texture;
                 scene.environment = texture;
             })
 
@@ -74,10 +74,10 @@ const Render3D = () => {
         animate();
 
         // Light
-        const ambientalLight = new THREE.AmbientLight(0xffffff, 2);
+        const ambientalLight = new THREE.AmbientLight(0xffffff, 0.01);
         scene.add(ambientalLight);
 
-        const pointlight = new THREE.PointLight(0xffffff, 2);
+        const pointlight = new THREE.PointLight(0xffffff, 0.01);
         pointlight.position.set(6, 6, 6);
         scene.add(pointlight);
 
