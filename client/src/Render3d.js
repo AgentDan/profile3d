@@ -4,25 +4,27 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls"
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader"
 import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 import {RGBELoader} from "three/examples/jsm/loaders/RGBELoader"
+import * as dat from 'dat.gui'
 
 const Render3D = () => {
 
     const mountRef = useRef(null)
-    const controls = useRef(null)
-    const path = `./../../../uploads/profile3Draco.gltf`
+    const path = `./../../../uploads/profile4Draco.gltf`
 
     useEffect(() => {
         const currentRef = mountRef.current;
+        // const gui = new dat.GUI({ width: 400 })
         const {clientWidth: width, clientHeight: height} = currentRef;
 
         //Scene, camera, renderer
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(9, width / height, 0.1, 100);
+        const camera = new THREE.PerspectiveCamera(10, width / height, 0.1, 100);
         scene.add(camera);
-        camera.position.set(11, 3, 35);
+        camera.position.set(15, 5, 15);
         camera.lookAt(new THREE.Vector3());
 
         const renderer = new THREE.WebGLRenderer({alpha: true});
+        renderer.shadowMap.enabled = true;
         renderer.setSize(width, height);
         currentRef.appendChild(renderer.domElement);
 
@@ -45,10 +47,22 @@ const Render3D = () => {
         //HDRI
         new RGBELoader()
             .load("./../../../uploads/HDR1.hdr", function (texture){
-                texture.mapping = THREE.EquirectangularReflectionMapping;
-                scene.background = texture;
+                texture.mapping = THREE.EquirectangularReflectionMapping(0xf71257, 10);
+                // scene.background = texture;
                 scene.environment = texture;
             })
+
+        const envMap = new THREE.CubeTextureLoader().load(
+            [
+                './envmap/px.png',
+                './envmap/nx.png',
+                './envmap/py.png',
+                './envmap/ny.png',
+                './envmap/pz.png',
+                './envmap/nz.png',
+            ]
+        )
+        // scene.environment = envMap
 
         //Groups
         const det = new THREE.Group();
@@ -74,12 +88,16 @@ const Render3D = () => {
         animate();
 
         // Light
-        const ambientalLight = new THREE.AmbientLight(0xffffff, 0.01);
+        const ambientalLight = new THREE.AmbientLight(0xffffff, 0.2);
         scene.add(ambientalLight);
 
-        const pointlight = new THREE.PointLight(0xffffff, 0.01);
-        pointlight.position.set(6, 6, 6);
+        const pointlight = new THREE.PointLight(0xFCFFFA, 0.5);
+        pointlight.position.set(5, 5, 1);
         scene.add(pointlight);
+
+        const pointlight2 = new THREE.PointLight(0xffffff, 0.5);
+        pointlight2.position.set(-5, 1, 1);
+        scene.add(pointlight2);
 
         return () => {
             window.removeEventListener("resize", resize);
@@ -89,7 +107,6 @@ const Render3D = () => {
 
     return (
         <div>
-            <h2>Проект</h2>
             <div
                 className='Contenedor3D'
                 ref={mountRef}
