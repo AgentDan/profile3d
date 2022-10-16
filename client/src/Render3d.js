@@ -13,7 +13,13 @@ const Render3D = () => {
 
     useEffect(() => {
         const currentRef = mountRef.current;
-        // const gui = new dat.GUI({ width: 400 })
+        const gui = new dat.GUI({ width: 400 })
+        const sceneParams = {
+            envMapIntensity: 0.38,
+            dlColor: 0xf71257,
+            alColor: 0x1ae2d8,
+        }
+
         const {clientWidth: width, clientHeight: height} = currentRef;
 
         //Scene, camera, renderer
@@ -44,13 +50,45 @@ const Render3D = () => {
         };
         window.addEventListener("resize", resize);
 
+        // Light
+        const folderLights = gui.addFolder("Lights")
+
+        const ambientalLight = new THREE.AmbientLight(0xffffff, 0.04);
+        scene.add(ambientalLight);
+
+        folderLights.add(ambientalLight, 'intensity')
+            .min(0.001)
+            .max(0.5)
+            .step(0.0001)
+            .name("DL Intensity")
+
+        const pointlight = new THREE.PointLight(0xFCFFFA, 0.5);
+        pointlight.position.set(5, 5, 1);
+        scene.add(pointlight);
+
+        folderLights.add(pointlight, 'intensity')
+            .min(0.01)
+            .max(5)
+            .step(0.0001)
+            .name("Point Light 1")
+
+        const pointlight2 = new THREE.PointLight(0xffffff, 0.5);
+        pointlight2.position.set(-5, 1, 1);
+        scene.add(pointlight2);
+
+        folderLights.add(pointlight2, 'intensity')
+            .min(0.01)
+            .max(5)
+            .step(0.0001)
+            .name("Point Light 2")
+
         //HDRI
-        new RGBELoader()
-            .load("./../../../uploads/HDR1.hdr", function (texture){
-                texture.mapping = THREE.EquirectangularReflectionMapping(0xf71257, 10);
-                // scene.background = texture;
-                scene.environment = texture;
-            })
+        // new RGBELoader()
+        //     .load("./../../../uploads/HDR1.hdr", function (texture){
+        //         texture.mapping = THREE.EquirectangularReflectionMapping(0xf71257, 10);
+        //         // scene.background = texture;
+        //         scene.environment = texture;
+        //     })
 
         const envMap = new THREE.CubeTextureLoader().load(
             [
@@ -62,7 +100,20 @@ const Render3D = () => {
                 './envmap/nz.png',
             ]
         )
-        // scene.environment = envMap
+        scene.environment = envMap
+        folderLights.add(sceneParams, 'envMapIntensity')
+            .min(0)
+            .max(2)
+            .step(0.0001)
+            .name("EnvMap Intensity")
+            .onChange(() => {
+                scene.traverse(child => {
+                    if (child instanceof THREE.Mesh &&
+                        child.material instanceof THREE.MeshStandardMaterial) {
+                        child.material.envMapIntensity = sceneParams.envMapIntensity
+                    }
+                })
+            })
 
         //Groups
         const det = new THREE.Group();
@@ -87,20 +138,10 @@ const Render3D = () => {
         };
         animate();
 
-        // Light
-        const ambientalLight = new THREE.AmbientLight(0xffffff, 0.2);
-        scene.add(ambientalLight);
-
-        const pointlight = new THREE.PointLight(0xFCFFFA, 0.5);
-        pointlight.position.set(5, 5, 1);
-        scene.add(pointlight);
-
-        const pointlight2 = new THREE.PointLight(0xffffff, 0.5);
-        pointlight2.position.set(-5, 1, 1);
-        scene.add(pointlight2);
 
         return () => {
             window.removeEventListener("resize", resize);
+            gui.destroy()
             currentRef.removeChild(renderer.domElement);
         };
     }, []);
